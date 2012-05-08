@@ -67,7 +67,7 @@ final class TsdbQuery implements Query {
   private int start_time = UNSET;
 
   /** End time (UNIX timestamp in seconds) on 32 bits ("unsigned" int). */
-  private int end_time = UNSET;
+  private long end_time = UNSET;
 
   /** ID of the metric being looked up. */
   private byte[] metric;
@@ -135,19 +135,18 @@ final class TsdbQuery implements Query {
   }
 
   public void setEndTime(final long timestamp) {
-    if ((timestamp & 0xFFFFFFFF00000000L) != 0) {
+    if (timestamp < 0) {
       throw new IllegalArgumentException("Invalid timestamp: " + timestamp);
     } else if (start_time != UNSET && timestamp <= getStartTime()) {
       throw new IllegalArgumentException("new end time (" + timestamp
           + ") is less than or equal to start time: " + getStartTime());
     }
-    // Keep the 32 bits.
-    end_time = (int) timestamp;
+    end_time = timestamp;
   }
 
   public long getEndTime() {
     if (end_time == UNSET) {
-      setEndTime(System.currentTimeMillis() / 1000);
+      setEndTime(System.currentTimeMillis());
     }
     return end_time;
   }

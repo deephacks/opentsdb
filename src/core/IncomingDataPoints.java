@@ -353,13 +353,13 @@ final class IncomingDataPoints implements WritableDataPoints {
     }
   }
 
-  private static short delta(final short qualifier) {
-    return (short) ((qualifier & 0xFFFF) >>> Const.FLAG_BITS);
+  private static int delta(final int qualifier) {
+    return qualifier >>> Const.FLAG_BITS;
   }
 
   public long timestamp(final int i) {
     checkIndex(i);
-    return baseTime() + (delta(qualifiers[i]) & 0xFFFF);
+    return baseTime() + delta(qualifiers[i]);
   }
 
   public boolean isInteger(final int i) {

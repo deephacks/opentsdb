@@ -103,10 +103,10 @@ final class TestCompactionQueue {
   @Test
   public void twoCellRow() throws Exception {
     ArrayList<KeyValue> kvs = new ArrayList<KeyValue>(2);
-    final byte[] qual1 = { 0x00, 0x07 };
+    final byte[] qual1 = { 0x00, 0x00, 0x00, 0x07 };
     final byte[] val1 = Bytes.fromLong(4L);
     kvs.add(makekv(qual1, val1));
-    final byte[] qual2 = { 0x00, 0x17 };
+    final byte[] qual2 = { 0x00, 0x00, 0x00, 0x17 };
     final byte[] val2 = Bytes.fromLong(5L);
     kvs.add(makekv(qual2, val2));
 
@@ -124,11 +124,11 @@ final class TestCompactionQueue {
     ArrayList<KeyValue> kvs = new ArrayList<KeyValue>(2);
     // Note: here the flags pretend the value is on 4 bytes, but it's actually
     // on 8 bytes, so we expect the code to fix the flags as it's compacting.
-    final byte[] qual1 = { 0x00, 0x03 };   // Pretends 4 bytes...
+    final byte[] qual1 = { 0x00, 0x00, 0x00, 0x03 };   // Pretends 4 bytes...
     final byte[] val1 = Bytes.fromLong(4L);    // ... 8 bytes actually.
-    final byte[] cqual1 = { 0x00, 0x07 };  // Should have been this.
+    final byte[] cqual1 = { 0x00, 0x00, 0x00, 0x07 };  // Should have been this.
     kvs.add(makekv(qual1, val1));
-    final byte[] qual2 = { 0x00, 0x17 };
+    final byte[] qual2 = { 0x00, 0x00, 0x00, 0x17 };
     final byte[] val2 = Bytes.fromLong(5L);
     kvs.add(makekv(qual2, val2));
 
@@ -148,10 +148,10 @@ final class TestCompactionQueue {
     ArrayList<KeyValue> kvs = new ArrayList<KeyValue>(2);
     // Note: here the flags pretend the value is on 4 bytes, but it's actually
     // on 8 bytes, so we expect the code to fix the flags as it's compacting.
-    final byte[] qual1 = { 0x00, 0x07 };
+    final byte[] qual1 = { 0x00, 0x00, 0x00, 0x07 };
     final byte[] val1 = Bytes.fromLong(4L);
     kvs.add(makekv(qual1, val1));
-    final byte[] qual2 = { 0x00, 0x1B };  // +1s, float, 4 bytes.
+    final byte[] qual2 = { 0x00, 0x00, 0x00, 0x1B };  // +1s, float, 4 bytes.
     final byte[] val2 = Bytes.fromLong(Float.floatToRawIntBits(4.2F));
     final byte[] cval2 = Bytes.fromInt(Float.floatToRawIntBits(4.2F));
     kvs.add(makekv(qual2, val2));
@@ -185,10 +185,10 @@ final class TestCompactionQueue {
     // non-compacted form.  This could happen if the TSD dies in between the
     // `put' of a compaction, before getting a change to do the deletes.
     ArrayList<KeyValue> kvs = new ArrayList<KeyValue>(3);
-    final byte[] qual1 = { 0x00, 0x07 };
+    final byte[] qual1 = { 0x00, 0x00, 0x00, 0x07 };
     final byte[] val1 = Bytes.fromLong(4L);
     kvs.add(makekv(qual1, val1));
-    final byte[] qual2 = { 0x00, 0x17 };
+    final byte[] qual2 = { 0x00, 0x00, 0x00, 0x17 };
     final byte[] val2 = Bytes.fromLong(5L);
     kvs.add(makekv(qual2, val2));
     final byte[] qualcompact = concat(qual1, qual2);
@@ -209,15 +209,15 @@ final class TestCompactionQueue {
     // point was written in the mean time.
     ArrayList<KeyValue> kvs = new ArrayList<KeyValue>(2);
     // This is 2 values already compacted together.
-    final byte[] qual1 = { 0x00, 0x07 };
+    final byte[] qual1 = { 0x00, 0x00, 0x00, 0x07 };
     final byte[] val1 = Bytes.fromLong(4L);
-    final byte[] qual2 = { 0x00, 0x27 };
+    final byte[] qual2 = { 0x00, 0x00, 0x00, 0x27 };
     final byte[] val2 = Bytes.fromLong(5L);
     final byte[] qual12 = concat(qual1, qual2);
     kvs.add(makekv(qual12, concat(val1, val2, ZERO)));
     // This data point came late.  Note that its time delta falls in between
     // that of the two data points above.
-    final byte[] qual3 = { 0x00, 0x17 };
+    final byte[] qual3 = { 0x00, 0x00, 0x00, 0x17 };
     final byte[] val3 = Bytes.fromLong(6L);
     kvs.add(makekv(qual3, val3));
 
@@ -238,14 +238,14 @@ final class TestCompactionQueue {
     // individual data points.  So the rows contains 2 compacted cells and
     // several individual cells.
     ArrayList<KeyValue> kvs = new ArrayList<KeyValue>(5);
-    final byte[] qual1 = { 0x00, 0x07 };
+    final byte[] qual1 = { 0x00, 0x00, 0x00, 0x07 };
     final byte[] val1 = Bytes.fromLong(4L);
-    final byte[] qual2 = { 0x00, 0x27 };
+    final byte[] qual2 = { 0x00, 0x00, 0x00, 0x27 };
     final byte[] val2 = Bytes.fromLong(5L);
     // Data points 1 + 2 compacted.
     final byte[] qual12 = concat(qual1, qual2);
     // This data point came late.
-    final byte[] qual3 = { 0x00, 0x17 };
+    final byte[] qual3 = { 0x00, 0x00, 0x00, 0x17 };
     final byte[] val3 = Bytes.fromLong(6L);
     // Data points 1 + 3 + 2 compacted.
     final byte[] qual132 = concat(qual1, qual3, qual2);
@@ -271,16 +271,16 @@ final class TestCompactionQueue {
     // data points.  Although a possible scenario, this is extremely unlikely,
     // but we need to test that logic works in this case too.
     ArrayList<KeyValue> kvs = new ArrayList<KeyValue>(5);
-    final byte[] qual1 = { 0x00, 0x07 };
+    final byte[] qual1 = { 0x00, 0x00, 0x00, 0x07 };
     final byte[] val1 = Bytes.fromLong(4L);
     kvs.add(makekv(qual1, val1));
     // Data points 1 + 2 compacted.
-    final byte[] qual2 = { 0x00, 0x27 };
+    final byte[] qual2 = { 0x00, 0x00, 0x00, 0x27 };
     final byte[] val2 = Bytes.fromLong(5L);
     final byte[] qual12 = concat(qual1, qual2);
     kvs.add(makekv(qual12, concat(val1, val2, ZERO)));
     // This data point came late.
-    final byte[] qual3 = { 0x00, 0x17 };
+    final byte[] qual3 = { 0x00, 0x00, 0x00, 0x17 };
     final byte[] val3 = Bytes.fromLong(6L);
     // Data points 1 + 3 compacted.
     final byte[] qual13 = concat(qual1, qual3);

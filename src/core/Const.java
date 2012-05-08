@@ -18,6 +18,9 @@ public final class Const {
   /** Number of bytes on which a timestamp is encoded.  */
   public static final short TIMESTAMP_BYTES = 4;
 
+  /** Number of bytes reserved for qualifier.  */
+  public static final short QUALIFIER_BYTES = 4;
+  
   /** Maximum number of tags allowed per data point.  */
   public static final short MAX_NUM_TAGS = 8;
   // 8 is an aggressive limit on purpose.  Can always be increased later.
@@ -38,7 +41,7 @@ public final class Const {
   static final short FLAGS_MASK = FLAG_FLOAT | LENGTH_MASK;
 
   /** Max time delta (in seconds) we can store in a column qualifier.  */
-  public static final short MAX_TIMESPAN = 3600;
+  public static final int MAX_TIMESPAN = 3600000;
 
   /**
    * Array containing the hexadecimal characters (0 to 9, A to F).

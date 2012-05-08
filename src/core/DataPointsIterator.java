@@ -56,7 +56,7 @@ final class DataPointsIterator implements SeekableView, DataPoint {
   // ---------------------- //
 
   public void seek(final long timestamp) {
-    if ((timestamp & 0xFFFFFFFF00000000L) != 0) {  // negative or not 32 bits
+    if (timestamp < 0) {
       throw new IllegalArgumentException("invalid timestamp: " + timestamp);
     }
     // Do a binary search to find the timestamp given or the one right before.
