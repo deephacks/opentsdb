@@ -157,10 +157,10 @@ final class RowSeq implements DataPoints {
     // we neither of them has a meta data byte so we need to add one to be
     // consistent with what we expect from compacted values.  Otherwise, we
     // need to subtract 1 from the value length.
-    final int old_val_len = values.length - (old_qual_len == 2 ? 0 : 1);
+    final int old_val_len = values.length - (old_qual_len == Const.QUALIFIER_BYTES ? 0 : 1);
     final byte[] newvals = new byte[old_val_len + val.length
       // Only add a meta-data byte if the new values don't have it.
-      + (len == 2 ? 1 : 0)];
+      + (len == Const.QUALIFIER_BYTES ? 1 : 0)];
     System.arraycopy(values, 0, newvals, 0, old_val_len);
     System.arraycopy(val, 0, newvals, old_val_len, val.length);
     assert newvals[newvals.length - 1] == 0:
@@ -404,7 +404,7 @@ final class RowSeq implements DataPoints {
     // ---------------------- //
 
     public void seek(final long timestamp) {
-      if ((timestamp & 0xFFFFFFFF00000000L) != 0) {  // negative or not 32 bits
+      if (timestamp < 0) {  // negative
         throw new IllegalArgumentException("invalid timestamp: " + timestamp);
       }
       qual_index = 0;

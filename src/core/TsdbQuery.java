@@ -63,10 +63,10 @@ final class TsdbQuery implements Query {
   /** Value used for timestamps that are uninitialized.  */
   private static final int UNSET = -1;
 
-  /** Start time (UNIX timestamp in seconds) on 32 bits ("unsigned" int). */
-  private int start_time = UNSET;
+  /** Start time (UNIX timestamp in milliseconds). */
+  private long start_time = UNSET;
 
-  /** End time (UNIX timestamp in seconds) on 32 bits ("unsigned" int). */
+  /** End time (UNIX timestamp in milliseconds). */
   private long end_time = UNSET;
 
   /** ID of the metric being looked up. */
@@ -117,21 +117,21 @@ final class TsdbQuery implements Query {
   }
 
   public void setStartTime(final long timestamp) {
-    if ((timestamp & 0xFFFFFFFF00000000L) != 0) {
+    if (timestamp < 0) {
       throw new IllegalArgumentException("Invalid timestamp: " + timestamp);
     } else if (end_time != UNSET && timestamp >= getEndTime()) {
       throw new IllegalArgumentException("new start time (" + timestamp
           + ") is greater than or equal to end time: " + getEndTime());
     }
-    // Keep the 32 bits.
-    start_time = (int) timestamp;
+
+    start_time = timestamp;
   }
 
   public long getStartTime() {
     if (start_time == UNSET) {
       throw new IllegalStateException("setStartTime was never called!");
     }
-    return start_time & 0x00000000FFFFFFFFL;
+    return start_time;
   }
 
   public void setEndTime(final long timestamp) {
@@ -371,10 +371,10 @@ final class TsdbQuery implements Query {
     // rely on having a few extra data points before & after the exact start
     // & end dates in order to do proper rate calculation or downsampling near
     // the "edges" of the graph.
-    Bytes.setInt(start_row, (int) getScanStartTime(), metric_width);
+    Bytes.setInt(start_row, (int) (getScanStartTime() / 1000), metric_width);
     Bytes.setInt(end_row, (end_time == UNSET
                            ? -1  // Will scan until the end (0xFFF...).
-                           : (int) getScanEndTime()),
+                           : (int) (getScanEndTime() / 1000)),
                  metric_width);
     System.arraycopy(metric, 0, start_row, 0, metric_width);
     System.arraycopy(metric, 0, end_row, 0, metric_width);
