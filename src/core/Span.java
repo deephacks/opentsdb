@@ -140,7 +140,7 @@ final class Span implements DataPoints {
    */
   static long lastTimestampInRow(final short metric_width,
                                  final KeyValue row) {
-    final long base_time = Bytes.getUnsignedInt(row.key(), metric_width);
+    final long base_time = Bytes.getUnsignedInt(row.key(), metric_width) * 1000;
     final byte[] qual = row.qualifier();
     final int last_delta = Bytes.getInt(qual, qual.length - Const.QUALIFIER_BYTES) 
                                   >>> Const.FLAG_BITS;

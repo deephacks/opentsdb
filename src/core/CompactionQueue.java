@@ -154,7 +154,7 @@ final class CompactionQueue extends ConcurrentSkipListMap<byte[], Boolean> {
       if (maxflushes == 0) {
         break;
       }
-      final long base_time = Bytes.getUnsignedInt(row, metric_width);
+      final long base_time = Bytes.getUnsignedInt(row, metric_width) * 1000;
       if (base_time > cut_off) {
         break;
       } else if (nflushes == MAX_CONCURRENT_FLUSHES) {
@@ -363,7 +363,7 @@ final class CompactionQueue extends ConcurrentSkipListMap<byte[], Boolean> {
     }
     if (compacted != null) {  // Caller is interested in the compacted form.
       compacted[0] = compact;
-      final long base_time = Bytes.getUnsignedInt(compact.key(), metric_width);
+      final long base_time = Bytes.getUnsignedInt(compact.key(), metric_width) * 1000;
       final long cut_off = System.currentTimeMillis() - Const.MAX_TIMESPAN - 1;
       if (base_time > cut_off) {  // If row is too recent...
         return null;              // ... Don't write back compacted.

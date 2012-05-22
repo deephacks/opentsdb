@@ -95,7 +95,7 @@ final class RowSeq implements DataPoints {
     }
 
     final byte[] key = row.key();
-    final long base_time = Bytes.getUnsignedInt(key, tsdb.metrics.width());
+    final long base_time = Bytes.getUnsignedInt(key, tsdb.metrics.width()) * 1000;
     final int time_adj = (int) (base_time - baseTime());
     if (time_adj <= 0) {
       // Corner case: if the time difference is 0 and the key is the same, it
@@ -260,7 +260,7 @@ final class RowSeq implements DataPoints {
 
   /** Extracts the base timestamp from the row key. */
   long baseTime() {
-    return Bytes.getUnsignedInt(key, tsdb.metrics.width());
+    return Bytes.getUnsignedInt(key, tsdb.metrics.width()) * 1000;
   }
 
   /** @throws IndexOutOfBoundsException if {@code i} is out of bounds. */
@@ -278,7 +278,7 @@ final class RowSeq implements DataPoints {
   public long timestamp(final int i) {
     checkIndex(i);
     // Important: Span.addRow assumes this method to work in O(1).
-    return baseTime() + (Bytes.getInt(qualifiers, i * Const.QUALIFIER_BYTES) 
+    return baseTime() + (Bytes.getUnsignedInt(qualifiers, i * Const.QUALIFIER_BYTES)
            >>> Const.FLAG_BITS);
   }
 
@@ -337,7 +337,7 @@ final class RowSeq implements DataPoints {
        .append("), base_time=")
        .append(base_time)
        .append(" (")
-       .append(base_time > 0 ? new Date(base_time * 1000) : "no date")
+       .append(base_time > 0 ? new Date(base_time) : "no date")
        .append("), [");
     for (short i = 0; i < size; i++) {
       final short qual = Bytes.getShort(qualifiers, i * 2);
@@ -427,7 +427,7 @@ final class RowSeq implements DataPoints {
 
     public long timestamp() {
       assert qualifier != 0: "not initialized: " + this;
-      return (base_time * 1000) + (qualifier >>> Const.FLAG_BITS);
+      return base_time + (qualifier >>> Const.FLAG_BITS);
     }
 
     public boolean isInteger() {

@@ -129,7 +129,7 @@ final class Fsck {
           // Take a copy of the row-key because we're going to zero-out the
           // timestamp and use that as a key in our `seen' map.
           final byte[] key = row.get(0).key().clone();
-          final long base_time = Bytes.getUnsignedInt(key, metric_width);
+          final long base_time = Bytes.getUnsignedInt(key, metric_width) * 1000;
           for (int i = metric_width; i < metric_width + Const.TIMESTAMP_BYTES; i++) {
             key[i] = 0;
           }
@@ -266,7 +266,7 @@ final class Fsck {
                 final byte[] newkey = kv.key().clone();
                 // Fix the timestamp in the row key.
                 final long new_base_time = (timestamp - (timestamp % Const.MAX_TIMESPAN));
-                Bytes.setInt(newkey, (int) new_base_time, metric_width);
+                Bytes.setInt(newkey, (int) (new_base_time / 1000), metric_width);
                 final short newqual = (short) ((timestamp - new_base_time) << Internal.FLAG_BITS
                                                | (qualifier & Internal.FLAGS_MASK));
                 final DeleteOutOfOrder delooo = new DeleteOutOfOrder(kv);
@@ -329,24 +329,24 @@ final class Fsck {
    * The last data point we've seen for a particular time series.
    */
   private static final class Seen {
-    /** A 32-bit unsigned integer that holds a UNIX timestamp in seconds.  */
-    private int timestamp;
+    /** Holds a UNIX timestamp in milliseconds.  */
+    private long timestamp;
     /** The raw data point (or points if the KV contains more than 1).  */
     KeyValue kv;
 
     private Seen(final long timestamp, final KeyValue kv) {
-      this.timestamp = (int) timestamp;
+      this.timestamp = timestamp;
       this.kv = kv;
     }
 
-    /** Returns the UNIX timestamp (in seconds) as a 32-bit unsigned int.  */
+    /** Returns the UNIX timestamp (in milliseconds) */
     public long timestamp() {
-      return timestamp & 0x00000000FFFFFFFFL;
+      return timestamp;
     }
 
-    /** Updates the UNIX timestamp (in seconds) with a 32-bit unsigned int.  */
+    /** Updates the UNIX timestamp (in milliseconds)  */
     public void setTimestamp(final long timestamp) {
-      this.timestamp = (int) timestamp;
+      this.timestamp = timestamp;
     }
   }
 

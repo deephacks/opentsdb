@@ -165,7 +165,7 @@ final class IncomingDataPoints implements WritableDataPoints {
     // because the HBase client may still hold a reference to it in its
     // internal datastructures.
     row = Arrays.copyOf(row, row.length);
-    Bytes.setInt(row, (int) base_time, tsdb.metrics.width());
+    Bytes.setInt(row, (int) (base_time / 1000), tsdb.metrics.width());
     tsdb.scheduleForCompaction(row, (int) base_time);
     return base_time;
   }
@@ -398,7 +398,7 @@ final class IncomingDataPoints implements WritableDataPoints {
        .append("), base_time=")
        .append(base_time)
        .append(" (")
-       .append(base_time > 0 ? new Date(base_time * 1000) : "no date")
+       .append(base_time > 0 ? new Date(base_time) : "no date")
        .append("), [");
     for (short i = 0; i < size; i++) {
       buf.append('+').append(delta(qualifiers[i]));
