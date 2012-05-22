@@ -145,12 +145,12 @@ final class GraphHandler implements HttpRpc {
     }
     for (final Query tsdbquery : tsdbqueries) {
       try {
-        tsdbquery.setStartTime(start_time);
+        tsdbquery.setStartTime(start_time * 1000);
       } catch (IllegalArgumentException e) {
         throw new BadRequestException("start time: " + e.getMessage());
       }
       try {
-        tsdbquery.setEndTime(end_time);
+        tsdbquery.setEndTime(end_time * 1000);
       } catch (IllegalArgumentException e) {
         throw new BadRequestException("end time: " + e.getMessage());
       }
