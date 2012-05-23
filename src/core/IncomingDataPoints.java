@@ -58,10 +58,10 @@ final class IncomingDataPoints implements WritableDataPoints {
    * Qualifiers for individual data points.
    * The last Const.FLAG_BITS bits are used to store flags (the type of the
    * data point - integer or floating point - and the size of the data point
-   * in bytes).  The remaining MSBs store a delta in seconds from the base
+   * in bytes).  The remaining MSBs store a delta in milliseconds from the base
    * timestamp stored in the row key.
    */
-  private short[] qualifiers;
+  private int[] qualifiers;
 
   /** Each value in the row. */
   private long[] values;
@@ -78,7 +78,7 @@ final class IncomingDataPoints implements WritableDataPoints {
    */
   IncomingDataPoints(final TSDB tsdb) {
     this.tsdb = tsdb;
-    this.qualifiers = new short[3];
+    this.qualifiers = new int[3];
     this.values = new long[3];
   }
 
@@ -186,10 +186,8 @@ final class IncomingDataPoints implements WritableDataPoints {
     if (row == null) {
       throw new IllegalStateException("setSeries() never called!");
     }
-    if ((timestamp & 0xFFFFFFFF00000000L) != 0) {
-      // => timestamp < 0 || timestamp > Integer.MAX_VALUE
-      throw new IllegalArgumentException((timestamp < 0 ? "negative " : "bad")
-          + " timestamp=" + timestamp
+    if (timestamp < 0) {
+      throw new IllegalArgumentException("negative timestamp=" + timestamp
           + " when trying to add value=" + Arrays.toString(value) + " to " + this);
     }
 
@@ -219,7 +217,7 @@ final class IncomingDataPoints implements WritableDataPoints {
     }
 
     // Java is so stupid with its auto-promotion of int to float.
-    final short qualifier = (short) ((timestamp - base_time) << Const.FLAG_BITS
+    final int qualifier = (int) ((timestamp - base_time) << Const.FLAG_BITS
                                      | flags);
     qualifiers[size] = qualifier;
     values[size] = (value.length == 8
@@ -228,7 +226,7 @@ final class IncomingDataPoints implements WritableDataPoints {
     size++;
 
     final PutRequest point = new PutRequest(tsdb.table, row, TSDB.FAMILY,
-                                            Bytes.fromShort(qualifier),
+                                            Bytes.fromInt(qualifier),
                                             value);
     // TODO(tsuna): The following timing is rather useless.  First of all,
     // the histogram never resets, so it tends to converge to a certain
